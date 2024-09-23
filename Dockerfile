@@ -3,7 +3,7 @@ FROM ubuntu:latest as ismrmrd_base
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/Chicago
 
-RUN apt-get update && apt-get install -y git cmake doxygen git g++ graphviz libboost-all-dev libfftw3-dev libhdf5-serial-dev libxml2-utils libpugixml-dev libxslt1-dev libtls-dev
+RUN apt-get update && apt-get install -y git cmake doxygen git g++ graphviz libboost-all-dev libfftw3-dev libhdf5-serial-dev libxml2-utils libpugixml-dev libxslt1-dev libtls-dev zlib1g-dev
 
 ENV BUILDTOP /opt/code/ge_to_ismrmrd
 ENV ISMRMRD_HOME $BUILDTOP/ismrmrd
@@ -51,11 +51,14 @@ RUN cd $BUILDTOP/ismrmrd/lib && tar czvf libismrmrd.tgz libismrmrd*
 # ----- Start another clean build without all of the build dependencies of ge_to_ismrmrd -----
 FROM ubuntu:latest
 
-RUN apt-get update && apt-get install -y --no-install-recommends libfftw3-3 libxslt1.1 libgomp1 libpugixml1v5 && apt-get clean && rm -rf /var/lib/apt/lists/*
+ENV GE_TOOLS_HOME /opt/code/ge_to_ismrmrd/ge-tools
+
+RUN apt-get update && apt-get install -y --no-install-recommends libfftw3-dev libxslt1.1 libgomp1 libpugixml1v5 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy ge2ismrmrd from last stage and re-add necessary dependencies ($BUILDTOP does not work here)
 COPY --from=ismrmrd_base /opt/code/ge_to_ismrmrd/ismrmrd/bin  /usr/local/bin
 COPY --from=ismrmrd_base /opt/code/ge_to_ismrmrd/ismrmrd/lib/libismrmrd.tgz   /usr/local/lib/
 COPY --from=ismrmrd_base /opt/code/ge_to_ismrmrd/ge-tools/bin/ge2ismrmrd  /usr/local/bin
 COPY --from=ismrmrd_base /opt/code/ge_to_ismrmrd/ge-tools/lib/libg2i.so   /usr/local/lib/
+COPY --from=ismrmrd_base /opt/code/ge_to_ismrmrd/ge-tools/ /opt/code/ge_to_ismrmrd/ge-tools/
 RUN cd /usr/local/lib && tar xzf libismrmrd.tgz && rm -f libismrmrd.tgz && ldconfig

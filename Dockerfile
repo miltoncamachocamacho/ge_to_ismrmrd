@@ -1,14 +1,20 @@
-FROM ubuntu:latest as ismrmrd_base
+FROM ubuntu:24.04 as ismrmrd_base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/Chicago
 
-RUN apt-get update && apt-get install -y git cmake doxygen git g++ graphviz libboost-all-dev libfftw3-dev libhdf5-serial-dev libxml2-utils libpugixml-dev libxslt1-dev libtls-dev zlib1g-dev
+
+RUN apt-get update && apt-get install -y \
+    git cmake doxygen g++ graphviz ca-certificates \
+    libboost-all-dev libfftw3-dev libhdf5-serial-dev \
+    zlib1g-dev libxml2-utils libpugixml-dev libxslt1-dev libtls-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    || cat /var/log/apt/term.log
 
 ENV BUILDTOP /opt/code/ge_to_ismrmrd
 ENV ISMRMRD_HOME $BUILDTOP/ismrmrd
 # comment the following out if you want to try the latest revision of ismrmrd
-ENV ISMRMRD_VERSION d364e03d3faa3ca516da7807713b5acc72218a37  
+#ENV ISMRMRD_VERSION d364e03d3faa3ca516da7807713b5acc72218a37  
 
 ENV GE_TOOLS_HOME $BUILDTOP/ge-tools
 ENV SDKTOP $BUILDTOP/orchestra-sdk
@@ -49,7 +55,7 @@ RUN cd $BUILDTOP && \
 RUN cd $BUILDTOP/ismrmrd/lib && tar czvf libismrmrd.tgz libismrmrd*
 
 # ----- Start another clean build without all of the build dependencies of ge_to_ismrmrd -----
-FROM ubuntu:latest
+FROM ubuntu:24.04
 
 ENV GE_TOOLS_HOME /opt/code/ge_to_ismrmrd/ge-tools
 

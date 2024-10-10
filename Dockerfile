@@ -10,11 +10,12 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev libxml2-utils libpugixml-dev libxslt1-dev libtls-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/* \
     || cat /var/log/apt/term.log
+    #dump into /var/log/apt/term.log in case of a failure when building the image
 
 ENV BUILDTOP /opt/code/ge_to_ismrmrd
 ENV ISMRMRD_HOME $BUILDTOP/ismrmrd
 # comment the following out if you want to try the latest revision of ismrmrd
-#ENV ISMRMRD_VERSION d364e03d3faa3ca516da7807713b5acc72218a37  
+ENV ISMRMRD_VERSION d364e03d3faa3ca516da7807713b5acc72218a37  
 
 ENV GE_TOOLS_HOME $BUILDTOP/ge-tools
 ENV SDKTOP $BUILDTOP/orchestra-sdk
